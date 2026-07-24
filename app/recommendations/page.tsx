@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getLocalMovies } from "../lib/movies";
+import { getLocalMovies } from "../../lib/movies";
 
 const moods = [
   { key: "cozy", label: "Cozy nights", blurb: "Warm, comforting stories with heart." },

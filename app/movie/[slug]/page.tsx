@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMovieBySlug } from "../../lib/movies";
+import { getMovieBySlug } from "../../../lib/movies";
 
 export default function MoviePage({ params }: { params: { slug: string } }) {
   const movie = getMovieBySlug(params.slug);

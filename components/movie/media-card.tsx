@@ -13,7 +13,7 @@ type MovieCardProps = {
   };
 };
 
-export function MovieCard({ movie }: MovieCardProps) {
+export function MediaCard({ movie }: MovieCardProps) {
   return (
     <article className="group overflow-hidden rounded-[1.5rem] border border-white/10 bg-[rgba(255,255,255,0.08)] shadow-[0_10px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(255,61,90,0.18)]">
       <img src={movie.image} alt={movie.title} className="h-48 w-full object-cover" />

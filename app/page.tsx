@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { MovieCard } from "./components/movie-card";
-import { getLocalMovies } from "./lib/movies";
+import { MediaCard } from "../components/movie/media-card";
+import { getLocalMovies } from "../lib/movies";
 
 const starterMovies = ["Interstellar", "The Martian", "Arrival", "Blade Runner 2049"];
 
@@ -140,7 +140,7 @@ export default function Home() {
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {visibleMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+              <MediaCard key={movie.id} movie={movie} />
             ))}
           </div>
         </section>

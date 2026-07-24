@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { movies } from "../lib/movies";
+import { movies } from "../../lib/movies";
 
 export default function WatchlistPage() {
   const [watchlistIds, setWatchlistIds] = useState<string[]>([]);

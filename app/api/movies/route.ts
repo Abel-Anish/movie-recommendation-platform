@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getLocalMovies } from "../../lib/movies";
+import { getLocalMovies } from "../../../lib/movies";
 
 function mapTmdbMovie(movie: any) {
   const posterPath = movie.poster_path

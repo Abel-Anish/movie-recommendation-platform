@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MovieCard } from "../components/movie-card";
-import { genres, getLocalMovies } from "../lib/movies";
+import { MediaCard } from "../../components/movie/media-card";
+import { genres, getLocalMovies } from "../../lib/movies";
 
 type MovieCard = {
   id: string;
@@ -81,7 +81,7 @@ export default function SearchPage() {
 
       <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {filteredMovies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+          <MediaCard key={movie.id} movie={movie} />
         ))}
       </section>
     </main>
