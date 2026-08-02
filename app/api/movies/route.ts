@@ -1,7 +1,20 @@
 import { NextResponse } from "next/server";
 import { getLocalMovies } from "../../../lib/movies";
 
-function mapTmdbMovie(movie: any) {
+type TmdbMovie = {
+  id?: number;
+  title?: string;
+  name?: string;
+  poster_path?: string;
+  backdrop_path?: string;
+  overview?: string;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  genre_ids?: number[];
+};
+
+function mapTmdbMovie(movie: TmdbMovie) {
   const posterPath = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
     : "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=80";

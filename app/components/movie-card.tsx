@@ -1,4 +1,4 @@
-import build from "next/dist/build";
+import Image from "next/image";
 import Link from "next/link";
 
 type MovieCardProps = {
@@ -17,7 +17,7 @@ type MovieCardProps = {
 export function MovieCard({ movie }: MovieCardProps) {
   return (
     <article className="group overflow-hidden rounded-[1.5rem] border border-white/10 bg-[rgba(255,255,255,0.08)] shadow-[0_10px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(255,61,90,0.18)]">
-      <img src={movie.image} alt={movie.title} className="h-48 w-full object-cover" />
+      <Image src={movie.image} alt={movie.title} width={800} height={480} className="h-48 w-full object-cover" />
       <div className="space-y-3 p-5">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-[#ff3d5a]">{movie.genre}</p>

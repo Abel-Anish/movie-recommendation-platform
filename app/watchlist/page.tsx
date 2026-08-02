@@ -1,21 +1,32 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { movies } from "../../lib/movies";
 
 export default function WatchlistPage() {
-  const [watchlistIds, setWatchlistIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("watchlist");
-    if (saved) {
-      setWatchlistIds(JSON.parse(saved));
+  const [watchlistIds, setWatchlistIds] = useState<string[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
     }
-  }, []);
+
+    const saved = window.localStorage.getItem("watchlist");
+    if (!saved) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(saved) as string[];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
-    window.localStorage.setItem("watchlist", JSON.stringify(watchlistIds));
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("watchlist", JSON.stringify(watchlistIds));
+    }
   }, [watchlistIds]);
 
   const watchlistMovies = useMemo(
@@ -44,7 +55,7 @@ export default function WatchlistPage() {
           const isSaved = watchlistIds.includes(movie.id);
           return (
             <article key={movie.id} className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
-              <img src={movie.image} alt={movie.title} className="h-44 w-full object-cover" />
+              <Image src={movie.image} alt={movie.title} width={800} height={480} className="h-44 w-full object-cover" />
               <div className="space-y-3 p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-pink-600">{movie.genre}</p>

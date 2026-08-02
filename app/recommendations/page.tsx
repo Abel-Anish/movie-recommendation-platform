@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getLocalMovies } from "../../lib/movies";
@@ -67,7 +68,7 @@ export default function RecommendationsPage() {
         <div className="grid gap-6 md:grid-cols-2">
           {recommendations.map((movie) => (
             <article key={movie.id} className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
-              <img src={movie.image} alt={movie.title} className="h-44 w-full object-cover" />
+              <Image src={movie.image} alt={movie.title} width={800} height={480} className="h-44 w-full object-cover" />
               <div className="space-y-3 p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-pink-600">{movie.genre}</p>

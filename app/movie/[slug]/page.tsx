@@ -1,9 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMovieBySlug } from "../../../lib/movies";
 
-export default function MoviePage({ params }: { params: { slug: string } }) {
-  const movie = getMovieBySlug(params.slug);
+export default async function MoviePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const movie = getMovieBySlug(slug);
 
   if (!movie) {
     notFound();
@@ -16,7 +18,7 @@ export default function MoviePage({ params }: { params: { slug: string } }) {
       </Link>
 
       <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-        <img src={movie.image} alt={movie.title} className="h-72 w-full object-cover" />
+        <Image src={movie.image} alt={movie.title} width={1600} height={900} className="h-72 w-full object-cover" />
         <div className="grid gap-8 p-8 lg:grid-cols-[1.2fr_0.8fr] lg:p-10">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
