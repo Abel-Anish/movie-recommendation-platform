@@ -1,11 +1,11 @@
 import { getLocalMovies } from "../lib/movies";
-import type { HomepageSection, Movie } from "../types/movie";
+import type { HomepageData, HomepageSection, Movie } from "../types/movie";
 import { HOME_SECTIONS } from "../constants/home";
 
-export async function getHomepageData(): Promise<{ featured: Movie | null; sections: HomepageSection[] }> {
+export async function getHomepageData(): Promise<HomepageData> {
   const movies = getLocalMovies() as Movie[];
 
-  const featured = movies[0] ?? null;
+  const featured = movies.find((movie) => movie.featured) ?? movies[0] ?? null;
 
   const sections: HomepageSection[] = [
     {
@@ -37,10 +37,17 @@ export async function getHomepageData(): Promise<{ featured: Movie | null; secti
       kind: "upcoming",
     },
     {
+      key: "now-playing",
+      title: HOME_SECTIONS.nowPlaying,
+      description: "Playing right now in the spotlight.",
+      movies: movies.slice(4, 10),
+      kind: "now-playing",
+    },
+    {
       key: "ai-picks",
       title: HOME_SECTIONS.aiPicks,
       description: "Tailored to your mood.",
-      movies: movies.slice(4, 10),
+      movies: movies.slice(5, 11),
       kind: "ai-picks",
     },
   ];

@@ -1,4 +1,11 @@
-export type MovieCategory = "trending" | "popular" | "top-rated" | "upcoming" | "ai-picks" | "continue-watching";
+export type MovieCategory =
+  | "trending"
+  | "popular"
+  | "top-rated"
+  | "upcoming"
+  | "now-playing"
+  | "ai-picks"
+  | "continue-watching";
 
 export type Movie = {
   id: string;
@@ -14,10 +21,30 @@ export type Movie = {
   overview: string;
   runtime: string;
   cast: string[];
+  crew?: string[];
   mood: "cozy" | "adventure" | "thriller" | "romantic";
   category?: MovieCategory;
   featured?: boolean;
   isNew?: boolean;
+};
+
+export type Review = {
+  id: string;
+  author: string;
+  content: string;
+  rating: number;
+  source: string;
+  date: string;
+};
+
+export type MovieDetails = Movie & {
+  credits: {
+    cast: string[];
+    crew: string[];
+  };
+  similar: Movie[];
+  recommendations: Movie[];
+  reviews: Review[];
 };
 
 export type HomepageSection = {
@@ -26,4 +53,9 @@ export type HomepageSection = {
   description?: string;
   movies: Movie[];
   kind: MovieCategory;
+};
+
+export type HomepageData = {
+  featured: Movie | null;
+  sections: HomepageSection[];
 };
