@@ -54,8 +54,8 @@ export default function WatchlistPage() {
         {movies.map((movie) => {
           const isSaved = watchlistIds.includes(movie.id);
           return (
-            <article key={movie.id} className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
-              <Image src={movie.image} alt={movie.title} width={800} height={480} className="h-44 w-full object-cover" />
+            <article key={`${movie.tmdbId || movie.id}-${movie.slug}`} className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
+              <Image src={movie.image || "/" } alt={movie.title || "Movie poster"} width={800} height={480} loading="eager" className="h-44 w-full object-cover" />
               <div className="space-y-3 p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-pink-600">{movie.genre}</p>

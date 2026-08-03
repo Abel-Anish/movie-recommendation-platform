@@ -89,9 +89,10 @@ export default function HomeInteractive() {
       </div>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {visibleMovies.map((movie) => (
-          <MediaCard key={movie.id} movie={movie} />
-        ))}
+        {visibleMovies.map((movie) => {
+          const key = `${movie.tmdbId || movie.id}-${movie.slug || movie.title || "movie"}`;
+          return <MediaCard key={key} movie={movie} />;
+        })}
       </div>
 
       {assistantOpen ? (

@@ -1,18 +1,6 @@
-export type Movie = {
-  id: string;
-  title: string;
-  slug: string;
-  genre: string;
-  year: number;
-  rating: string;
-  image: string;
-  blurb: string;
-  vibe: string;
-  overview: string;
-  runtime: string;
-  cast: string[];
-  mood: "cozy" | "adventure" | "thriller" | "romantic";
-};
+import type { Movie as SharedMovie } from "../types/movie";
+
+export type Movie = SharedMovie;
 
 export const movies: Movie[] = [
   {

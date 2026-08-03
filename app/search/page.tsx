@@ -2,34 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MediaCard } from "../../components/movie/media-card";
-import { genres, getLocalMovies } from "../../lib/movies";
+import { getLocalMovies } from "../../lib/movies";
+import type { Movie } from "../../types/movie";
 
-type MovieCard = {
-  id: string;
-  title: string;
-  slug: string;
-  genre: string;
-  year: number;
-  rating: string;
-  image: string;
-  blurb: string;
-  vibe: string;
-  overview: string;
-  runtime: string;
-  cast: string[];
-  mood: string;
-};
+
+const genres = ["All", "Action", "Adventure", "Comedy", "Drama", "Thriller", "Romance", "Sci-Fi", "Family", "Fantasy"];
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [activeGenre, setActiveGenre] = useState("All");
-  const [movies, setMovies] = useState<MovieCard[]>(getLocalMovies());
+  const [movies, setMovies] = useState<Movie[]>(getLocalMovies());
 
   useEffect(() => {
-    fetch(`/api/movies?search=${encodeURIComponent(query)}&genre=${encodeURIComponent(activeGenre)}`)
+    const controller = new AbortController();
+    fetch(`/api/movies?search=${encodeURIComponent(query)}&genre=${encodeURIComponent(activeGenre)}`, { signal: controller.signal })
       .then((response) => response.json())
       .then((data) => setMovies(data.movies || getLocalMovies()))
       .catch(() => setMovies(getLocalMovies()));
+
+    return () => controller.abort();
   }, [activeGenre, query]);
 
   const filteredMovies = useMemo(() => {
@@ -48,7 +39,7 @@ export default function SearchPage() {
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-pink-600">Search library</p>
         <h1 className="mt-3 text-3xl font-black text-slate-900">Find your next watch fast.</h1>
         <p className="mt-3 max-w-2xl text-base leading-8 text-slate-600">
-          Search by mood, genre, or title and discover a more personal movie lineup.
+          Search by title, genre, or mood and discover a more personal movie lineup from TMDb.
         </p>
 
         <label className="mt-6 flex flex-col gap-2 text-sm font-semibold text-slate-700">
@@ -80,9 +71,10 @@ export default function SearchPage() {
       </section>
 
       <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {filteredMovies.map((movie) => (
-          <MediaCard key={movie.id} movie={movie} />
-        ))}
+        {filteredMovies.map((movie) => {
+          const key = `${movie.tmdbId || movie.id}-${movie.slug || movie.title || "movie"}`;
+          return <MediaCard key={key} movie={movie} />;
+        })}
       </section>
     </main>
   );

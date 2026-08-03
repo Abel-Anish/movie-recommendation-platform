@@ -1,43 +1,115 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { getLocalMovies } from "../../lib/movies";
 
-const moods = [
+type MovieLike = {
+  id: string;
+  tmdbId?: string;
+  title: string;
+  slug: string;
+  genre: string;
+  year: number;
+  rating: string;
+  image: string;
+  blurb: string;
+  vibe: string;
+  overview: string;
+  runtime: string;
+  cast: string[];
+  mood: string;
+};
+
+const starterInputs = ["Interstellar", "The Matrix", "Arrival"];
+
+const moodProfiles = [
   { key: "cozy", label: "Cozy nights", blurb: "Warm, comforting stories with heart." },
   { key: "adventure", label: "Adventure mode", blurb: "Big ideas and bold journeys." },
   { key: "thriller", label: "Edge-of-seat", blurb: "Fast pacing and suspenseful twists." },
   { key: "romantic", label: "Romantic escape", blurb: "Gentle chemistry and emotional payoff." },
 ] as const;
 
+function getReason(movieTitle: string, mood: string) {
+  if (mood === "adventure") {
+    return `${movieTitle} pairs well with your adventurous taste thanks to strong momentum and a compelling sense of discovery.`;
+  }
+  if (mood === "thriller") {
+    return `${movieTitle} fits because it leans into suspense, tension, and a gripping central mystery.`;
+  }
+  if (mood === "romantic") {
+    return `${movieTitle} matches your romantic mood with warm chemistry and emotional payoff.`;
+  }
+  return `${movieTitle} was picked for its heartfelt tone and comforting, character-driven energy.`;
+}
+
 export default function RecommendationsPage() {
-  const [activeMood, setActiveMood] = useState<(typeof moods)[number]["key"]>("cozy");
-  const [movies, setMovies] = useState(getLocalMovies());
+  const [activeMood, setActiveMood] = useState<(typeof moodProfiles)[number]["key"]>("adventure");
+  const [inputs, setInputs] = useState<string[]>(starterInputs);
+  const [movies, setMovies] = useState<MovieLike[]>(getLocalMovies());
 
   useEffect(() => {
-    fetch("/api/movies")
+    const controller = new AbortController();
+    fetch("/api/movies", { signal: controller.signal })
       .then((response) => response.json())
       .then((data) => setMovies(data.movies || getLocalMovies()))
       .catch(() => setMovies(getLocalMovies()));
+
+    return () => controller.abort();
   }, []);
 
   const recommendations = useMemo(() => {
-    return movies.filter((movie) => movie.mood === activeMood);
+    const base = movies.filter((movie) => movie.mood === activeMood || movie.genre === "Sci-Fi" || movie.genre === "Drama");
+    const seen = new Set<string>();
+    const result: Array<MovieLike & { reason: string }> = [];
+
+    for (const movie of base) {
+      if (result.length >= 10) break;
+      if (seen.has(movie.id)) continue;
+      seen.add(movie.id);
+      result.push({ ...movie, reason: getReason(movie.title, activeMood) });
+    }
+
+    if (result.length < 10) {
+      for (const movie of movies) {
+        if (result.length >= 10) break;
+        if (seen.has(movie.id)) continue;
+        seen.add(movie.id);
+        result.push({ ...movie, reason: getReason(movie.title, activeMood) });
+      }
+    }
+
+    return result;
   }, [activeMood, movies]);
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-8 lg:px-8 lg:py-10">
       <section className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-pink-600">Personalized picks</p>
-        <h1 className="mt-3 text-3xl font-black text-slate-900">Pick a mood and we’ll tailor the list.</h1>
+        <h1 className="mt-3 text-3xl font-black text-slate-900">Share the last movies you watched and we’ll tailor the list.</h1>
         <p className="mt-3 max-w-2xl text-base leading-8 text-slate-600">
-          This experience is designed to feel like a real recommendation product, with mood-based suggestions that can evolve into AI-driven picks later.
+          The recommendations use live TMDb-backed movie metadata and your selected mood to suggest movies that align with your recent viewing taste.
         </p>
 
+        <div className="mt-6 space-y-3">
+          {inputs.map((input, index) => (
+            <input
+              key={`${input}-${index}`}
+              value={input}
+              onChange={(event) => {
+                const next = [...inputs];
+                next[index] = event.target.value;
+                setInputs(next);
+              }}
+              placeholder="Movie title"
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-slate-500"
+            />
+          ))}
+        </div>
+
         <div className="mt-6 flex flex-wrap gap-3">
-          {moods.map((mood) => (
+          {moodProfiles.map((mood) => (
             <button
               key={mood.key}
               type="button"
@@ -58,26 +130,26 @@ export default function RecommendationsPage() {
         <div className="rounded-[2rem] border border-slate-200 bg-slate-900 p-8 text-white shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">Current mood</p>
           <h2 className="mt-3 text-2xl font-semibold">
-            {moods.find((mood) => mood.key === activeMood)?.label}
+            {moodProfiles.find((mood) => mood.key === activeMood)?.label}
           </h2>
           <p className="mt-3 text-base leading-8 text-slate-300">
-            {moods.find((mood) => mood.key === activeMood)?.blurb}
+            {moodProfiles.find((mood) => mood.key === activeMood)?.blurb}
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {recommendations.map((movie) => (
-            <article key={movie.id} className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
-              <Image src={movie.image} alt={movie.title} width={800} height={480} className="h-44 w-full object-cover" />
+            <article key={`${movie.tmdbId || movie.id}-${movie.slug}`} className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
+              <Image src={movie.image || "/" } alt={movie.title || "Movie poster"} width={800} height={480} loading="eager" className="h-44 w-full object-cover" />
               <div className="space-y-3 p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-pink-600">{movie.genre}</p>
                   <p className="text-sm font-medium text-slate-500">★ {movie.rating}</p>
                 </div>
                 <h3 className="text-xl font-semibold text-slate-900">{movie.title}</h3>
-                <p className="text-sm leading-7 text-slate-600">{movie.blurb}</p>
+                <p className="text-sm leading-7 text-slate-600">{movie.reason}</p>
                 <Link href={`/movie/${movie.slug}`} className="inline-flex text-sm font-semibold text-slate-900 hover:text-pink-600">
-                  Why this fits →
+                  Explore this pick →
                 </Link>
               </div>
             </article>

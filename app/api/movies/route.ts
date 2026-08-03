@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { getLocalMovies } from "../../../lib/movies";
+import { buildTmdbUrl, fetchJson } from "../../../services/api";
+import { mapTmdbMovie } from "../../../services/movie.service";
 
 type TmdbMovie = {
   id?: number;
   title?: string;
   name?: string;
-  poster_path?: string;
-  backdrop_path?: string;
+  poster_path?: string | null;
+  backdrop_path?: string | null;
   overview?: string;
   release_date?: string;
   first_air_date?: string;
@@ -14,32 +16,24 @@ type TmdbMovie = {
   genre_ids?: number[];
 };
 
-function mapTmdbMovie(movie: TmdbMovie) {
-  const posterPath = movie.poster_path
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=80";
-  const backdropPath = movie.backdrop_path
-    ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-    : posterPath;
+type TmdbListResponse = {
+  results?: TmdbMovie[];
+};
 
-  return {
-    id: `${movie.id}`,
-    title: movie.title || movie.name || "Untitled",
-    slug: (movie.title || movie.name || "untitled")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-"),
-    genre: movie.genre_ids?.[0] ? "Trending" : "Featured",
-    year: Number((movie.release_date || movie.first_air_date || "2024").slice(0, 4)),
-    rating: `${(movie.vote_average || 0).toFixed(1)}/10`,
-    image: posterPath,
-    backdrop: backdropPath,
-    blurb: movie.overview || "A cinematic pick from the live movie database.",
-    vibe: "Fresh and cinematic",
-    overview: movie.overview || "A cinematic pick from the live movie database.",
-    runtime: "2h",
-    cast: ["Live TMDb data", "Dynamic recommendation"],
-    mood: "adventure" as const,
+function mapGenreName(genre: string) {
+  const map: Record<string, string> = {
+    "Sci-Fi": "878",
+    Family: "10751",
+    Thriller: "53",
+    Action: "28",
+    Adventure: "12",
+    Comedy: "35",
+    Drama: "18",
+    Romance: "10749",
+    Fantasy: "14",
   };
+
+  return map[genre] || "";
 }
 
 export async function GET(request: Request) {
@@ -58,21 +52,27 @@ export async function GET(request: Request) {
   }
 
   try {
-    let url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${process.env.TMDB_API_KEY}`;
+    let url = buildTmdbUrl("/trending/movie/week", { page: "1" });
 
     if (search) {
-      url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(search)}&api_key=${process.env.TMDB_API_KEY}&include_adult=false`;
+      url = buildTmdbUrl("/search/movie", {
+        query: encodeURIComponent(search),
+        include_adult: "false",
+        page: "1",
+      });
     } else if (genre && genre !== "All") {
-      url = `https://api.themoviedb.org/3/discover/movie?api_key=${process.env.TMDB_API_KEY}&sort_by=popularity.desc&with_genres=${encodeURIComponent(genre)}`;
+      const genreId = mapGenreName(genre);
+      if (genreId) {
+        url = buildTmdbUrl("/discover/movie", {
+          sort_by: "popularity.desc",
+          with_genres: genreId,
+          page: "1",
+        });
+      }
     }
 
-    const response = await fetch(url, { next: { revalidate: 60 } });
-    if (!response.ok) {
-      throw new Error("TMDb request failed");
-    }
-
-    const payload = await response.json();
-    const movies = (payload.results || []).slice(0, 9).map(mapTmdbMovie);
+    const payload = await fetchJson<TmdbListResponse>(url);
+    const movies = await Promise.all((payload.results || []).slice(0, 9).map((movie) => mapTmdbMovie(movie as never)));
     return NextResponse.json({ movies: movies.length ? movies : fallbackMovies });
   } catch {
     return NextResponse.json({ movies: fallbackMovies });

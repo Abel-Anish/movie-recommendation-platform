@@ -9,6 +9,7 @@ export type MovieCategory =
 
 export type Movie = {
   id: string;
+  tmdbId?: string;
   title: string;
   slug: string;
   genre: string;
@@ -16,6 +17,8 @@ export type Movie = {
   rating: string;
   image: string;
   backdrop?: string;
+  posterPath?: string | null;
+  backdropPath?: string | null;
   blurb: string;
   vibe: string;
   overview: string;
@@ -26,6 +29,12 @@ export type Movie = {
   category?: MovieCategory;
   featured?: boolean;
   isNew?: boolean;
+  releaseDate?: string;
+  originalLanguage?: string;
+  genres?: string[];
+  trailer?: string | null;
+  director?: string;
+  keywords?: string[];
 };
 
 export type Review = {
