@@ -47,7 +47,11 @@ function mapGenreName(genre: string) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const search = searchParams.get("search")?.trim() || "";
+  const search =
+    searchParams.get("search")?.trim() ||
+    searchParams.get("query")?.trim() ||
+    searchParams.get("q")?.trim() ||
+    "";
   const genre = searchParams.get("genre")?.trim() || "";
   const language = searchParams.get("language")?.trim() || "";
   const mood = searchParams.get("mood")?.trim() || "";
@@ -74,22 +78,23 @@ export async function GET(request: Request) {
         include_adult: "false",
         page: `${Math.max(1, page)}`,
       });
-    } else if (language) {
-      url = buildTmdbUrl("/discover/movie", {
+    } else if (language || (genre && genre !== "All")) {
+      const discoverParams: Record<string, string> = {
         sort_by: "popularity.desc",
-        with_original_language: language,
-        "vote_count.gte": "25",
         page: `${Math.max(1, page)}`,
-      });
-    } else if (genre && genre !== "All") {
-      const genreId = mapGenreName(genre);
-      if (genreId) {
-        url = buildTmdbUrl("/discover/movie", {
-          sort_by: "popularity.desc",
-          with_genres: genreId,
-          page: `${Math.max(1, page)}`,
-        });
+      };
+      if (language) {
+        discoverParams.with_original_language = language;
+      } else {
+        discoverParams["vote_count.gte"] = "15";
       }
+      if (genre && genre !== "All") {
+        const genreId = mapGenreName(genre);
+        if (genreId) {
+          discoverParams.with_genres = genreId;
+        }
+      }
+      url = buildTmdbUrl("/discover/movie", discoverParams);
     }
 
     const payload = await fetchJson<TmdbListResponse>(url);
@@ -97,7 +102,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ movies: search ? [] : fallbackMovies });
     }
 
-    const movies = await Promise.all((payload.results || []).slice(0, 18).map((movie) => mapTmdbMovie(movie as never)));
+    let movies = await Promise.all((payload.results || []).slice(0, 18).map((movie) => mapTmdbMovie(movie as never)));
+    if (search && language) {
+      const filtered = movies.filter((m) => (m as { originalLanguage?: string }).originalLanguage === language);
+      if (filtered.length > 0) movies = filtered;
+    }
+    if (search && genre && genre !== "All") {
+      const filtered = movies.filter((m) => m.genre === genre || m.genres?.includes(genre));
+      if (filtered.length > 0) movies = filtered;
+    }
+
     return NextResponse.json({ movies: movies.length ? movies : fallbackMovies });
   } catch {
     return NextResponse.json({ movies: fallbackMovies });
