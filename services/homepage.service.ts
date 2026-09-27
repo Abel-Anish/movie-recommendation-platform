@@ -1,18 +1,21 @@
 import { getLocalMovies } from "../lib/movies";
 import type { HomepageData, HomepageSection, Movie } from "../types/movie";
 import { HOME_SECTIONS } from "../constants/home";
-import { getMovieCatalogByCategory } from "./movie.service";
+import { getGlobalDiscoveryLanes, getMovieCatalogByCategory, getTonightPick } from "./movie.service";
 
 export async function getHomepageData(): Promise<HomepageData> {
   const fallbackMovies = getLocalMovies() as Movie[];
 
-  const [trending, popular, topRated, upcoming, nowPlaying] = await Promise.all([
-    getMovieCatalogByCategory("trending"),
-    getMovieCatalogByCategory("popular"),
-    getMovieCatalogByCategory("top-rated"),
-    getMovieCatalogByCategory("upcoming"),
-    getMovieCatalogByCategory("now-playing"),
-  ]);
+  const [trending, popular, topRated, upcoming, nowPlaying, tonightPick, globalLanes] =
+    await Promise.all([
+      getMovieCatalogByCategory("trending"),
+      getMovieCatalogByCategory("popular"),
+      getMovieCatalogByCategory("top-rated"),
+      getMovieCatalogByCategory("upcoming"),
+      getMovieCatalogByCategory("now-playing"),
+      getTonightPick(),
+      getGlobalDiscoveryLanes(),
+    ]);
 
   const sections: HomepageSection[] = [
     {
@@ -54,5 +57,5 @@ export async function getHomepageData(): Promise<HomepageData> {
 
   const featured = sections[0]?.movies[0] ?? fallbackMovies[0] ?? null;
 
-  return { featured, sections };
+  return { featured, sections, tonightPick, globalLanes };
 }
