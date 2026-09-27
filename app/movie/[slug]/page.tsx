@@ -83,8 +83,8 @@ export default async function MoviePage({ params }: { params: Promise<{ slug: st
                   <span className="comic-badge comic-badge-red text-xs">
                     {movie.genre}
                   </span>
-                  <span className="comic-badge comic-badge-gold text-xs">
-                    ★ {movie.rating}
+                  <span className="comic-badge comic-badge-gold text-xs" title="TMDb Community Rating">
+                    ★ TMDb {movie.rating}
                   </span>
                   <span className="comic-badge comic-badge-dark text-xs">
                     {releaseYear}

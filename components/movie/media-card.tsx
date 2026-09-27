@@ -93,7 +93,7 @@ export function MediaCard({
               <h3 className="font-sans text-xl font-black uppercase tracking-tight text-white transition group-hover:text-[#f5c518]">
                 {title}
               </h3>
-              <span className="text-xs font-bold text-[#f5c518]">★ {ratingValue}</span>
+              <span className="text-xs font-bold text-[#f5c518]" title="TMDb Community Rating">★ TMDb {ratingValue}</span>
             </div>
 
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -148,7 +148,7 @@ export function MediaCard({
                 <span className="comic-badge comic-badge-red">{movie.genre}</span>
                 <span className="text-xs font-bold text-slate-400">{releaseYear}</span>
               </div>
-              <span className="text-xs font-black text-[#f5c518]">★ {ratingValue}</span>
+              <span className="text-xs font-black text-[#f5c518]" title="TMDb Community Rating">★ TMDb {ratingValue}</span>
             </div>
 
             <h3 className="text-xl font-black uppercase tracking-tight text-white group-hover:text-[#e50914] transition">
@@ -252,8 +252,8 @@ export function MediaCard({
 
         {/* Bottom corner rating overlay */}
         <div className="absolute bottom-2.5 right-3">
-          <span className="comic-badge comic-badge-gold">
-            ★ {ratingValue}
+          <span className="comic-badge comic-badge-gold" title="TMDb Community Rating">
+            ★ TMDb {ratingValue}
           </span>
         </div>
       </div>

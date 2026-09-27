@@ -85,8 +85,21 @@ export async function GET(request: Request) {
     const candidatePool: Movie[] = [];
     const seenCandidateIds = new Set<string>();
 
+    // Extract seeds from natural language prompt if seeds not explicitly provided
+    const derivedSeeds = [...seedTitles];
+    if (derivedSeeds.length === 0 && prompt) {
+      const match = prompt.match(/(?:like|similar to)\s+([A-Za-z0-9\s]+?)(?:\s+but|\s+from|\s+with|\s+in|$)/i);
+      if (match && match[1]?.trim()) {
+        derivedSeeds.push(match[1].trim());
+      }
+    }
+
     const targetSeeds =
-      seedTitles.length > 0 ? seedTitles.slice(0, 5) : ["Interstellar", "Arrival", "The Matrix"];
+      derivedSeeds.length > 0
+        ? derivedSeeds.slice(0, 5)
+        : prompt
+        ? []
+        : ["Interstellar", "Arrival", "The Matrix"];
 
     // Harvest candidates from seeds
     for (const seedTitle of targetSeeds) {
@@ -138,16 +151,44 @@ export async function GET(request: Request) {
     // Natural Language Query assistance
     if (prompt) {
       const parsed = parseNaturalLanguageQuery(prompt);
+      const TMDB_GENRES: Record<string, string> = {
+        Action: "28",
+        Adventure: "12",
+        Animation: "16",
+        Comedy: "35",
+        Crime: "80",
+        Documentary: "99",
+        Drama: "18",
+        Family: "10751",
+        Fantasy: "14",
+        History: "36",
+        Horror: "27",
+        Music: "10402",
+        Mystery: "9648",
+        Romance: "10749",
+        "Sci-Fi": "878",
+        Thriller: "53",
+        War: "10752",
+        Western: "37",
+      };
+
+      const params: Record<string, string> = {
+        sort_by: "popularity.desc",
+        "vote_count.gte": "10",
+        page: "1",
+      };
       if (parsed.language) {
+        params.with_original_language = parsed.language;
+      }
+      if (parsed.genre && TMDB_GENRES[parsed.genre]) {
+        params.with_genres = TMDB_GENRES[parsed.genre];
+      }
+
+      if (parsed.language || parsed.genre) {
         try {
-          const langUrl = buildTmdbUrl("/discover/movie", {
-            with_original_language: parsed.language,
-            sort_by: "popularity.desc",
-            "vote_count.gte": "25",
-            page: "1",
-          });
+          const langUrl = buildTmdbUrl("/discover/movie", params);
           const langRes = await fetchJson<TmdbSearchResult>(langUrl);
-          for (const raw of (langRes.results || []).slice(0, 10)) {
+          for (const raw of (langRes.results || []).slice(0, 16)) {
             if (raw.id && !seenCandidateIds.has(String(raw.id))) {
               seenCandidateIds.add(String(raw.id));
               const mapped = await mapTmdbMovie(raw as never);
@@ -157,6 +198,15 @@ export async function GET(request: Request) {
         } catch {
           // Ignore
         }
+      }
+
+      if (activeSeeds.length === 0) {
+        activeSeeds.push({
+          title: prompt,
+          genres: parsed.genre ? [parsed.genre] : ["Cinema"],
+          keywords: [prompt],
+          language: parsed.language || "en",
+        });
       }
     }
 

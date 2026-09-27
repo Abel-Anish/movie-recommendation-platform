@@ -15,8 +15,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MovieMatch | Movie Recommendations",
-  description: "A polished movie recommendation website with trending picks for every mood.",
+  title: "MovieMatch | Cinematic Storyboard & Mood Discovery",
+  description:
+    "A world-class cinematic movie discovery platform featuring multi-seed recommendations, Cinema DNA taste profiler, natural-language search, and curated global cinema powered by TMDb.",
+  keywords: [
+    "movie recommendations",
+    "cinema discovery",
+    "film taste profiler",
+    "world cinema",
+    "Cinema DNA",
+    "TMDb",
+  ],
+  openGraph: {
+    title: "MovieMatch | Cinematic Storyboard & Mood Discovery",
+    description:
+      "Find movies tailored to your cinematic DNA, multi-seed inputs, and international taste.",
+    type: "website",
+    locale: "en_US",
+    siteName: "MovieMatch",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MovieMatch | Cinematic Storyboard & Mood Discovery",
+    description:
+      "Find movies tailored to your cinematic DNA, multi-seed inputs, and international taste.",
+  },
 };
 
 export default function RootLayout({
